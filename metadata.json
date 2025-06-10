@@ -1,0 +1,6 @@
+{
+  "name": "Interactive Coffee Brewing Guide",
+  "description": "An interactive, mobile-first coffee brewing guide that generates custom recipes based on user inputs, with built-in timers and educational content. The guide adapts brewing parameters for different roast levels, grind sizes, and brewing methods.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
