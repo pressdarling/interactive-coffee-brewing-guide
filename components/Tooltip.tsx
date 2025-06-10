@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 
 interface TooltipProps {
   text: string;
@@ -8,6 +8,7 @@ interface TooltipProps {
 
 export function Tooltip({ text, children }: TooltipProps): React.ReactNode {
   const [isVisible, setIsVisible] = useState(false);
+  const tooltipId = useId(); // Generate a stable ID
 
   // Ensure children is a single valid React element
   const child = React.Children.only(children);
@@ -19,11 +20,15 @@ export function Tooltip({ text, children }: TooltipProps): React.ReactNode {
   const triggerElement = React.cloneElement(child, {
     onMouseEnter: showTooltip,
     onMouseLeave: hideTooltip,
-    onTouchStart: () => setIsVisible(!isVisible), // Toggle on touch
+    onTouchStart: (e: React.TouchEvent) => {
+      // Prevent mouse events from firing on touch devices after touch
+      e.preventDefault(); 
+      setIsVisible(!isVisible);
+    },
     onFocus: showTooltip,
     onBlur: hideTooltip,
     // Add accessibility attributes
-    'aria-describedby': isVisible ? `tooltip-${Math.random().toString(36).substr(2, 9)}` : undefined,
+    'aria-describedby': isVisible ? tooltipId : undefined,
   });
 
   return (
@@ -32,7 +37,7 @@ export function Tooltip({ text, children }: TooltipProps): React.ReactNode {
       {isVisible && (
         <div
           role="tooltip"
-          id={`tooltip-${Math.random().toString(36).substr(2, 9)}`} // Should match aria-describedby if used
+          id={tooltipId} // Use the stable ID
           className="absolute z-10 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm tooltip bottom-full left-1/2 transform -translate-x-1/2 mb-2 min-w-max max-w-xs"
         >
           {text}
