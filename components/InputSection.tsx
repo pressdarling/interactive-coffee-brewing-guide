@@ -1,11 +1,18 @@
-
 import React from 'react';
 import { BrewMethod, GrindSize, RoastType } from '../types';
 import { SelectControl } from './SelectControl';
 import { NumberInputControl } from './NumberInputControl';
 import { ButtonGroupControl } from './ButtonGroupControl';
 import { GRIND_SIZE_VISUALS, MAX_CUPS, MIN_WATER_IN_KETTLE_ML, MAX_WATER_IN_KETTLE_ML, DEFAULT_WATER_IN_KETTLE_ML } from '../constants';
-import { Tooltip } from './Tooltip';
+// Tooltip and InfoIcon are not used in the current version of this file, can be removed if not planned for immediate use.
+// import { Tooltip } from './Tooltip'; 
+
+// const InfoIcon = () => (
+//   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 inline-block ml-1 text-gray-400 hover:text-gray-600 cursor-pointer">
+//     <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+//   </svg>
+// );
+
 
 interface InputSectionProps {
   roastType: RoastType;
@@ -19,12 +26,6 @@ interface InputSectionProps {
   cups: number;
   setCups: (value: number) => void;
 }
-
-const InfoIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 inline-block ml-1 text-gray-400 hover:text-gray-600 cursor-pointer">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-  </svg>
-);
 
 
 export function InputSection({
@@ -87,14 +88,16 @@ export function InputSection({
           onChange={setWaterAmount}
           min={MIN_WATER_IN_KETTLE_ML}
           max={MAX_WATER_IN_KETTLE_ML}
+          step={50} // Or 10, or 1 depending on desired granularity for slider
           unit="mL"
-          helpText={`Default: ${DEFAULT_WATER_IN_KETTLE_ML}mL. Affects water cooling time.`}
+          helpText={`Affects water cooling time. Current: ${waterAmount}mL.`}
+          useSlider={true}
         />
         
         <div className="md:col-span-2">
          <ButtonGroupControl
             label="Number of Cups"
-            options={[1, 2, 3, 4]}
+            options={[1, 2, 3, 4]} // These are potential options, filtered by maxSelectable
             selectedValue={cups}
             onSelect={handleCupsChange}
             maxSelectable={MAX_CUPS[brewMethod]}
@@ -105,4 +108,3 @@ export function InputSection({
     </div>
   );
 }
-    
