@@ -1,17 +1,11 @@
+
 import React from 'react';
 import { BrewMethod, GrindSize, RoastType } from '../types';
 import { SelectControl } from './SelectControl';
 import { NumberInputControl } from './NumberInputControl';
 import { ButtonGroupControl } from './ButtonGroupControl';
-import { GRIND_SIZE_VISUALS, MAX_CUPS, MIN_WATER_IN_KETTLE_ML, MAX_WATER_IN_KETTLE_ML, DEFAULT_WATER_IN_KETTLE_ML } from '../constants';
-// Tooltip and InfoIcon are not used in the current version of this file, can be removed if not planned for immediate use.
-// import { Tooltip } from './Tooltip'; 
-
-// const InfoIcon = () => (
-//   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 inline-block ml-1 text-gray-400 hover:text-gray-600 cursor-pointer">
-//     <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-//   </svg>
-// );
+import { TabButtonGroupControl, TabOption } from './TabButtonGroupControl'; // Import new component
+import { GRIND_SIZE_VISUALS, MAX_CUPS, MIN_WATER_IN_KETTLE_ML, MAX_WATER_IN_KETTLE_ML } from '../constants';
 
 
 interface InputSectionProps {
@@ -43,11 +37,33 @@ export function InputSection({
   
   const currentGrindVisual = GRIND_SIZE_VISUALS[grindSize];
 
+  const brewMethodOptions: TabOption<BrewMethod>[] = Object.values(BrewMethod).map(method => ({
+    value: method,
+    label: method, // You might want to format this (e.g., "Pour-Over" from BrewMethod.POUROVER)
+                     // For now, using the enum value directly if it's already descriptive.
+  }));
+
+  const handleBrewMethodChange = (newMethod: BrewMethod) => {
+    setBrewMethod(newMethod);
+    // Adjust cups if current selection exceeds max for new method
+    if (cups > (MAX_CUPS[newMethod] || 1)) {
+      setCups(MAX_CUPS[newMethod] || 1);
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
       <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-3">Brewing Parameters</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+      <TabButtonGroupControl<BrewMethod>
+        id="brewMethod"
+        label="Brewing Method"
+        options={brewMethodOptions}
+        selectedValue={brewMethod}
+        onChange={handleBrewMethodChange}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 mt-4">
         <SelectControl<RoastType>
           id="roastType"
           label="Coffee Roast Type"
@@ -56,31 +72,15 @@ export function InputSection({
           onChange={setRoastType}
         />
 
-        <div>
-          <SelectControl<GrindSize>
-            id="grindSize"
-            label="Grind Size"
-            value={grindSize}
-            options={Object.values(GrindSize)}
-            onChange={setGrindSize}
-            helpText={currentGrindVisual ? `${currentGrindVisual.description} (e.g., ${currentGrindVisual.example})` : undefined}
-          />
-        </div>
-        
-        <SelectControl<BrewMethod>
-          id="brewMethod"
-          label="Brewing Method"
-          value={brewMethod}
-          options={Object.values(BrewMethod)}
-          onChange={(newMethod) => {
-            setBrewMethod(newMethod);
-            // Adjust cups if current selection exceeds max for new method
-            if (cups > (MAX_CUPS[newMethod] || 1)) {
-              setCups(MAX_CUPS[newMethod] || 1);
-            }
-          }}
+        <SelectControl<GrindSize>
+          id="grindSize"
+          label="Grind Size"
+          value={grindSize}
+          options={Object.values(GrindSize)}
+          onChange={setGrindSize}
+          helpText={currentGrindVisual ? `${currentGrindVisual.description} (e.g., ${currentGrindVisual.example})` : undefined}
         />
-
+        
         <NumberInputControl
           id="waterAmount"
           label="Water in Kettle"
@@ -88,22 +88,20 @@ export function InputSection({
           onChange={setWaterAmount}
           min={MIN_WATER_IN_KETTLE_ML}
           max={MAX_WATER_IN_KETTLE_ML}
-          step={50} // Or 10, or 1 depending on desired granularity for slider
+          step={50} 
           unit="mL"
-          helpText={`Affects water cooling time. Current: ${waterAmount}mL.`}
+          helpText={`Affects water cooling time. Current: ${waterAmount}mL. Min: ${MIN_WATER_IN_KETTLE_ML}, Max: ${MAX_WATER_IN_KETTLE_ML}.`}
           useSlider={true}
         />
         
-        <div className="md:col-span-2">
-         <ButtonGroupControl
+        <ButtonGroupControl
             label="Number of Cups"
-            options={[1, 2, 3, 4]} // These are potential options, filtered by maxSelectable
+            options={[1, 2, 3, 4]}
             selectedValue={cups}
             onSelect={handleCupsChange}
             maxSelectable={MAX_CUPS[brewMethod]}
             helpText={`Max cups for ${brewMethod}: ${MAX_CUPS[brewMethod]}.`}
-          />
-        </div>
+        />
       </div>
     </div>
   );
