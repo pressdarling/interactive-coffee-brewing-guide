@@ -109,12 +109,15 @@ function generatePourOverSteps(
   const pourActionDuration = Math.round(durationPerMainPourPhase * 0.6); // 60% of phase is pouring
   const pourWaitDuration = Math.round(durationPerMainPourPhase * 0.4); // 40% is waiting/partial drawdown
 
+  // The first 3 steps are Prepare, Bloom, and Wait. So main pours start at step 4.
+  const mainPourStartStep = 4;
+
   for (let i = 0; i < numMainPours; i++) {
     if (currentTime + pourActionDuration > totalBrewTimeSeconds && i < numMainPours -1) break; // Avoid overflow if time is too short
     const pourAmount = (i === numMainPours - 1) ? (totalWaterMl - (bloomWater + (waterPerMainPour * (numMainPours -1)))) : waterPerMainPour;
 
     steps.push({
-      id: `pourover-mainpour-${i + 1}`, title: `4. Main Pour ${i + 1}/${numMainPours}`,
+      id: `pourover-mainpour-${i + 1}`, title: `${mainPourStartStep + i}. Main Pour ${i + 1}/${numMainPours}`,
       details: `Slowly pour ${pourAmount}mL of water in a circular motion, avoiding the edges. Aim to reach ${bloomWater + (waterPerMainPour * (i+1))}mL total water.`,
       startTimeSeconds: currentTime, durationSeconds: pourActionDuration, isTimed: true,
     });
@@ -132,8 +135,10 @@ function generatePourOverSteps(
   
   const drawdownDuration = Math.max(15, totalBrewTimeSeconds - currentTime); // Ensure at least 15s for drawdown
    if (drawdownDuration > 0) {
+    // This step comes after all main pours.
+    const drawdownStepNumber = mainPourStartStep + numMainPours;
     steps.push({
-      id: 'pourover-drawdown', title: `${3 + numMainPours + (numMainPours-1)}. Final Drawdown`, // Adjust step number
+      id: 'pourover-drawdown', title: `${drawdownStepNumber}. Final Drawdown`,
       details: 'Allow all water to drip through the coffee bed. This should complete around your target brew time.',
       startTimeSeconds: currentTime, durationSeconds: drawdownDuration, isTimed: true,
     });
